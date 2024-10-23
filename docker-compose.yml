@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    image: elasticsearch:8.15.1 
+    environment:
+      - discovery.type=single-node  
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m  
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"  
+    volumes:
+      - esdata:/usr/share/elasticsearch/data 
+
+  kibana:
+    image: kibana:8.15.1  
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200 
+      - ELASTICSEARCH_SERVICE_TOKEN=${ELASTICSEARCH_SERVICE_TOKEN}
+    ports:
+      - "5601:5601"  
+    depends_on:
+      - elasticsearch  
+      
+volumes:
+  esdata:
